@@ -3,7 +3,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
@@ -24,6 +28,7 @@ public class Main {
         int formPost =0;
         int formGet =0;
         int n=0;
+        int a=0;
         int valor;
         String newAction;
         String tipos;
@@ -36,9 +41,12 @@ public class Main {
             documentoHTML = Jsoup.connect(urlEscaneada).get();
             System.out.println("URL valida!");
             /////////////////////////Cantidad de lineas en el documento////////////////////////////////
-
-            cantidadLineas= documentoHTML.toString().split("\n").length;
-
+            URL urlObjeto = new URL(urlEscaneada);
+            InputStreamReader urlLeida = new InputStreamReader(urlObjeto.openStream());
+            BufferedReader arregloLeido = new BufferedReader(urlLeida);
+            while(arregloLeido.readLine()!=null) {
+                cantidadLineas++;
+            }
             /////////////////////////Cantidad de formularios por metodo////////////////////////////////
 
             formPost = documentoHTML.getElementsByAttributeValueContaining("method","post").size();
@@ -80,24 +88,22 @@ public class Main {
             System.out.println("\n");
             Elements fPost = documentoHTML.getElementsByAttributeValueContaining("method","post");
             for (Element formpost: fPost) {
-                newAction = formpost.attr("action");
-                valor = formpost.attr("action").length();
-
-                if(valor==2){
-                    newDocumentoHTML = Jsoup.connect(urlEscaneada+"/").data("asignatura","practica1").post();
-                }else{
-                    newDocumentoHTML = Jsoup.connect(urlEscaneada+newAction).data("asignatura","practica1").post();
-                }
-                System.out.println(newDocumentoHTML);
+                a++;
+                System.out.println("Formulario-->"+a);
+                newAction = formpost.absUrl("action");
+                newDocumentoHTML = Jsoup.connect(newAction).data("asignatura","practica1").post();
+                System.out.println("Respuesta del Servidor:" +newDocumentoHTML);
             }
 
         } catch (UnknownHostException errorHost) {
             System.err.println("URL no valida");
-
-        } catch (IOException errorIO) {
+        }
+        catch (MalformedURLException e) {
+            System.out.println("URL mal Formulada");
+        }
+        catch (IOException errorIO) {
             System.out.println("Error de Entrada/Salida");
         }
-
 
     }
 
